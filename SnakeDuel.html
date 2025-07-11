@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" id="html-lang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="title">Snake Duel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f7fa;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: #2c2c2c;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        h2, h3 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode h2, body.dark-mode h3 {
+            color: #e0e0e0;
+        }
+
+        .sidebar p {
+            text-align: left;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        body.dark-mode .sidebar p {
+            color: #adb5bd;
+        }
+
+        #dark-mode-toggle {
+            position: absolute;
+            top: 15px;
+            right: 55px;
+            background-color: #6c757d;
+            padding: 8px;
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            color: #fff;
+            border: none;
+        }
+
+        #dark-mode-toggle:hover {
+            background-color: #5a6268;
+            transform: scale(1.1);
+        }
+
+        body.dark-mode #dark-mode-toggle {
+            background-color: #adb5bd;
+        }
+
+        body.dark-mode #dark-mode-toggle:hover {
+            background-color: #8f9ba6;
+        }
+
+        #toggle-language {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #28a745;
+            padding: 8px;
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            color: #fff;
+            border: none;
+        }
+
+        #toggle-language:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        body.dark-mode #toggle-language {
+            background-color: #2f9e44;
+        }
+
+        body.dark-mode #toggle-language:hover {
+            background-color: #1b6e2f;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            max-width: 120px;
+        }
+
+        label {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode label {
+            color: #e0e0e0;
+        }
+
+        select, button {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            transition: background-color 0.3s, border-color 0.3s;
+            width: 100%;
+            cursor: pointer;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        body.dark-mode select, body.dark-mode button {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: background-color 0.3s, border-color 0.3s;
+            width: 100%;
+            max-width: 500px;
+            height: 500px;
+        }
+
+        body.dark-mode canvas {
+            background-color: #3a3a3a;
+            border-color: #555;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode #game-over {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+        }
+
+        .life-indicators {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 2px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        body.dark-mode .life-indicators {
+            background-color: #3a3a3a;
+            border-color: #555;
+        }
+
+        .life-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .indicator-box {
+            width: 40px;
+            height: 10px;
+        }
+
+        .player-indicator {
+            background-color: #28a745;
+        }
+
+        .enemy-indicator {
+            background-color: #dc3545;
+        }
+
+        .life-text {
+            font-size: 20px;
+            color: #333;
+        }
+
+        body.dark-mode .life-text {
+            color: #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                margin: 20px auto;
+                padding: 10px;
+                flex-direction: column;
+            }
+
+            .container, .sidebar {
+                max-width: 100%;
+            }
+
+            canvas {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container, .sidebar {
+                padding: 15px;
+            }
+
+            #dark-mode-toggle, #toggle-language {
+                padding: 6px;
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+
+            canvas {
+                height: 300px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .control-group {
+                max-width: 100%;
+            }
+
+            select, button {
+                height: 28px;
+                font-size: 12px;
+            }
+
+            .life-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 data-lang-key="title">Snake Duel</h2>
+        <button id="dark-mode-toggle">☾</button>
+        <button id="toggle-language" data-lang-key="toggle_language">中</button>
+        <div class="controls">
+            <div class="control-group">
+                <label for="difficulty" data-lang-key="difficulty_label">Difficulty</label>
+                <select id="difficulty">
+                    <option value="150" selected data-lang-key="easy">Easy</option>
+                    <option value="100" data-lang-key="medium">Medium</option>
+                    <option value="50" data-lang-key="hard">Hard</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="map" data-lang-key="map_label">Map</label>
+                <select id="map">
+                    <option value="normal" data-lang-key="normal_map">Normal</option>
+                    <option value="toroidal" selected data-lang-key="toroidal_map">Toroidal</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="restart" data-lang-key="restart_label"></label>
+                <button id="restart" data-lang-key="restart">Restart</button>
+            </div>
+        </div>
+        <div class="life-indicators">
+            <div class="life-indicator">
+                <div class="indicator-box player-indicator"></div>
+                <span class="life-text" id="player-life" data-lang-key="player">Player: ♥♥♥♥♥</span>
+            </div>
+            <div class="life-indicator">
+                <span class="life-text" id="enemy-life" data-lang-key="enemy">Enemy: ♥♥♥♥♥</span>
+                <div class="indicator-box enemy-indicator"></div>
+            </div>
+        </div>
+        <canvas id="canvas" width="500" height="500"></canvas>
+        <div id="game-over">
+            <h3 id="game-over-text" data-lang-key="game_over_text"></h3>
+            <button id="restart-game-over" data-lang-key="play_again">Play Again</button>
+        </div>
+    </div>
+    <div class="sidebar">
+        <h3 data-lang-key="about_title">About Snake Duel</h3>
+        <p data-lang-key="objective"><strong>Objective:</strong> Control the green snake to eat food (blue) and health pickups (yellow) while avoiding collisions with yourself or the red enemy snake.</p>
+        <p data-lang-key="controls"><strong>Controls:</strong> Use arrow keys to move the green snake (up, down, left, right).</p>
+        <p data-lang-key="mechanics"><strong>Mechanics:</strong> Eating food grows your snake. Health pickups restore 1 life (max 5). If snakes collide, the shorter snake loses 1 life; if equal, both lose 1 life.</p>
+        <p data-lang-key="maps"><strong>Maps:</strong> Normal: Snakes die on wall collisions. Toroidal: Snakes wrap around to the opposite side when hitting a wall.</p>
+        <p data-lang-key="win_lose"><strong>Win/Lose:</strong> Win by reducing the enemy's life to 0 or if the enemy hits a wall or itself (Normal map). Lose if your snake hits a wall (Normal map), itself, or runs out of life.</p>
+        <p data-lang-key="difficulty"><strong>Difficulty:</strong> Adjust speed with the difficulty selector (Easy: slower, Hard: faster).</p>
+        <p data-lang-key="tip"><strong>Tip:</strong> Grow longer than the enemy to gain an advantage in collisions!</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        let playerSnake = [{ x: 10, y: 10 }];
+        let enemySnake = [{ x: 20, y: 20 }];
+        let playerLife = 5;
+        let enemyLife = 5;
+        let food = { x: 15, y: 15, type: 'food' };
+        let playerDir = { x: 1, y: 0 };
+        let enemyDir = { x: -1, y: 0 };
+        let gameSpeed = 150; // milliseconds
+        let gameMap = 'toroidal';
+        let lastTime = 0;
+        let gameOver = false;
+        let gameRunning = false;
+
+        // Colors
+        const playerColor = '#28a745';
+        const enemyColor = '#dc3545';
+        const foodColor = '#007bff';
+        const healthColor = '#ffc107';
+
+        // Translations
+        const translations = {
+            en: {
+                title: "Snake Duel",
+                toggle_language: "中",
+                difficulty_label: "Difficulty",
+                map_label: "Map",
+                restart_label: "",
+                easy: "Easy",
+                medium: "Medium",
+                hard: "Hard",
+                normal_map: "Normal",
+                toroidal_map: "Toroidal",
+                restart: "Restart",
+                play_again: "Play Again",
+                about_title: "About Snake Duel",
+                objective: "<strong>Objective:</strong> Control the green snake to eat food (blue) and health pickups (yellow) while avoiding collisions with yourself or the red enemy snake.",
+                controls: "<strong>Controls:</strong> Use arrow keys to move the green snake (up, down, left, right).",
+                mechanics: "<strong>Mechanics:</strong> Eating food grows your snake. Health pickups restore 1 life (max 5). If snakes collide, the shorter snake loses 1 life; if equal, both lose 1 life.",
+                maps: "<strong>Maps:</strong> Normal: Snakes die on wall collisions. Toroidal: Snakes wrap around to the opposite side when hitting a wall.",
+                win_lose: "<strong>Win/Lose:</strong> Win by reducing the enemy's life to 0 or if the enemy hits a wall or itself (Normal map). Lose if your snake hits a wall (Normal map), itself, or runs out of life.",
+                difficulty: "<strong>Difficulty:</strong> Adjust speed with the difficulty selector (Easy: slower, Hard: faster).",
+                tip: "<strong>Tip:</strong> Grow longer than the enemy to gain an advantage in collisions!",
+                player: "Player",
+                enemy: "Enemy",
+                win: "You Win! Enemy Defeated!",
+                lose: "Game Over! You Lose!"
+            },
+            zh: {
+                title: "蛇之對決",
+                toggle_language: "EN",
+                difficulty_label: "難度",
+                map_label: "地圖",
+                restart_label: "",
+                easy: "簡單",
+                medium: "中等",
+                hard: "困難",
+                normal_map: "普通地圖",
+                toroidal_map: "環形地圖",
+                restart: "重新開始",
+                play_again: "再次遊戲",
+                about_title: "關於蛇之對決",
+                objective: "<strong>目標：</strong> 控制綠色蛇吃食物（藍色）和生命補充（黃色），同時避免與自身或紅色敵蛇碰撞。",
+                controls: "<strong>控制：</strong> 使用方向鍵移動綠色蛇（上、下、左、右）。",
+                mechanics: "<strong>機制：</strong> 吃食物會使蛇增長。生命補充恢復1點生命（最多5點）。若兩蛇碰撞，較短的蛇失去1點生命；若長度相等，雙方各失去1點生命。",
+                maps: "<strong>地圖：</strong> 普通地圖：蛇撞牆會死亡。環形地圖：蛇撞牆會從對側出現。",
+                win_lose: "<strong>勝負：</strong> 將敵蛇生命值降至0或敵蛇撞牆或自身（普通地圖）即獲勝。若你的蛇撞牆（普通地圖）、自身或生命值耗盡則失敗。",
+                difficulty: "<strong>難度：</strong> 使用難度選擇器調整速度（簡單：較慢，困難：較快）。",
+                tip: "<strong>提示：</strong> 讓你的蛇比敵蛇長，以在碰撞中佔優勢！",
+                player: "玩家",
+                enemy: "敵人",
+                win: "你贏了！敵人被擊敗！",
+                lose: "遊戲結束！你輸了！"
+            }
+        };
+
+        // Current language
+        let currentLanguage = 'en';
+
+        // Update language
+        function updateLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('html-lang').setAttribute('lang', lang === 'en' ? 'en' : 'zh-TW');
+
+            // Update all elements with data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    element.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update life indicators
+            updateLifeIndicators();
+        }
+
+        // Initialize game
+        function initializeGame() {
+            playerSnake = [{ x: 10, y: 10 }];
+            enemySnake = [{ x: 20, y: 20 }];
+            playerLife = 5;
+            enemyLife = 5;
+            playerDir = { x: 1, y: 0 };
+            enemyDir = { x: -1, y: 0 };
+            spawnFood();
+            gameOver = false;
+            gameRunning = false;
+            document.getElementById('game-over').style.display = 'none';
+            updateLifeIndicators();
+            draw(); // Initial draw
+        }
+
+        // Update life indicators
+        function updateLifeIndicators() {
+            document.getElementById('player-life').innerHTML = translations[currentLanguage].player + ': ' + '♥'.repeat(playerLife);
+            document.getElementById('enemy-life').innerHTML = translations[currentLanguage].enemy + ': ' + '♥'.repeat(enemyLife);
+        }
+
+        // Spawn food or health pickup
+        function spawnFood() {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * tileCount);
+                y = Math.floor(Math.random() * tileCount);
+            } while (
+                playerSnake.some(segment => segment.x === x && segment.y === y) ||
+                enemySnake.some(segment => segment.x === x && segment.y === y)
+            );
+            food = { x, y, type: Math.random() < 0.1 ? 'health' : 'food' };
+        }
+
+        // Simple AI for enemy snake
+        function moveEnemy() {
+            let target = food;
+            if (enemySnake.length > playerSnake.length && Math.random() < 0.3) {
+                target = playerSnake[0]; // Occasionally chase player
+            }
+
+            const dx = target.x - enemySnake[0].x;
+            const dy = target.y - enemySnake[0].y;
+            let newDir = { x: 0, y: 0 };
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                newDir.x = dx > 0 ? 1 : -1;
+            } else {
+                newDir.y = dy > 0 ? 1 : -1;
+            }
+
+            // Prevent reversing
+            if (newDir.x !== -enemyDir.x || newDir.y !== -enemyDir.y) {
+                enemyDir = newDir;
+            }
+        }
+
+        // Handle toroidal wrapping
+        function wrapPosition(head) {
+            if (head.x < 0) head.x = tileCount - 1;
+            else if (head.x >= tileCount) head.x = 0;
+            if (head.y < 0) head.y = tileCount - 1;
+            else if (head.y >= tileCount) head.y = 0;
+        }
+
+        // Check collisions
+        function checkCollisions(snake, otherSnake, isPlayer) {
+            const head = snake[0];
+            // Wall collision (only in Normal map)
+            if (gameMap === 'normal') {
+                if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                    return true;
+                }
+            }
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            // Snake collision
+            for (let i = 0; i < otherSnake.length; i++) {
+                if (head.x === otherSnake[i].x && head.y === otherSnake[i].y) {
+                    if (snake.length < otherSnake.length) {
+                        if (isPlayer) playerLife--;
+                        else enemyLife--;
+                    } else if (snake.length > otherSnake.length) {
+                        if (isPlayer) enemyLife--;
+                        else playerLife--;
+                    } else {
+                        playerLife--;
+                        enemyLife--;
+                    }
+                    updateLifeIndicators();
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // Draw everything
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw food
+            ctx.fillStyle = food.type === 'food' ? foodColor : healthColor;
+            ctx.beginPath();
+            ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize / 2 - 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw snakes
+            playerSnake.forEach(segment => {
+                ctx.fillStyle = playerColor;
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+            enemySnake.forEach(segment => {
+                ctx.fillStyle = enemyColor;
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+        }
+
+        // Update game state
+        function update(timestamp) {
+            if (gameOver || !gameRunning) return;
+
+            const delta = timestamp - lastTime;
+            if (delta < gameSpeed) {
+                requestAnimationFrame(update);
+                return;
+            }
+            lastTime = timestamp;
+
+            // Move player
+            const playerHead = { x: playerSnake[0].x + playerDir.x, y: playerSnake[0].y + playerDir.y };
+            if (gameMap === 'toroidal') wrapPosition(playerHead);
+            playerSnake.unshift(playerHead);
+            let playerGrow = false;
+            if (playerHead.x === food.x && playerHead.y === food.y) {
+                playerGrow = true;
+                if (food.type === 'health') playerLife = Math.min(playerLife + 1, 5);
+                spawnFood();
+                updateLifeIndicators();
+            }
+            if (!playerGrow) playerSnake.pop();
+
+            // Move enemy
+            moveEnemy();
+            const enemyHead = { x: enemySnake[0].x + enemyDir.x, y: enemySnake[0].y + enemyDir.y };
+            if (gameMap === 'toroidal') wrapPosition(enemyHead);
+            enemySnake.unshift(enemyHead);
+            let enemyGrow = false;
+            if (enemyHead.x === food.x && enemyHead.y === food.y) {
+                enemyGrow = true;
+                if (food.type === 'health') enemyLife = Math.min(enemyLife + 1, 5);
+                spawnFood();
+                updateLifeIndicators();
+            }
+            if (!enemyGrow) enemySnake.pop();
+
+            // Check collisions
+            if (checkCollisions(playerSnake, enemySnake, true)) {
+                gameOver = true;
+                gameRunning = false;
+                document.getElementById('game-over-text').innerHTML = translations[currentLanguage].lose;
+                document.getElementById('game-over').style.display = 'block';
+            } else if (checkCollisions(enemySnake, playerSnake, false)) {
+                gameOver = true;
+                gameRunning = false;
+                document.getElementById('game-over-text').innerHTML = translations[currentLanguage].win;
+                document.getElementById('game-over').style.display = 'block';
+            } else if (playerLife <= 0) {
+                gameOver = true;
+                gameRunning = false;
+                document.getElementById('game-over-text').innerHTML = translations[currentLanguage].lose;
+                document.getElementById('game-over').style.display = 'block';
+            } else if (enemyLife <= 0) {
+                gameOver = true;
+                gameRunning = false;
+                document.getElementById('game-over-text').innerHTML = translations[currentLanguage].win;
+                document.getElementById('game-over').style.display = 'block';
+            }
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        // Start game
+        function startGame() {
+            gameRunning = true;
+            lastTime = performance.now();
+            requestAnimationFrame(update);
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const toggleButton = document.getElementById('dark-mode-toggle');
+            toggleButton.textContent = document.body.classList.contains('dark-mode') ? '☀' : '☾';
+        }
+
+        // Event listeners
+        document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('toggle-language').addEventListener('click', () => {
+            const newLang = currentLanguage === 'en' ? 'zh' : 'en';
+            updateLanguage(newLang);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            
+            // Start game on first key press
+            if (!gameRunning) {
+                startGame();
+            }
+            
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (playerDir.y === 0) playerDir = { x: 0, y: -1 };
+                    break;
+                case 'ArrowDown':
+                    if (playerDir.y === 0) playerDir = { x: 0, y: 1 };
+                    break;
+                case 'ArrowLeft':
+                    if (playerDir.x === 0) playerDir = { x: -1, y: 0 };
+                    break;
+                case 'ArrowRight':
+                    if (playerDir.x === 0) playerDir = { x: 1, y: 0 };
+                    break;
+            }
+        });
+
+        document.getElementById('difficulty').addEventListener('change', (e) => {
+            gameSpeed = parseInt(e.target.value);
+            initializeGame();
+        });
+
+        document.getElementById('map').addEventListener('change', (e) => {
+            gameMap = e.target.value;
+            initializeGame();
+        });
+
+        document.getElementById('restart').addEventListener('click', () => {
+            initializeGame();
+        });
+
+        document.getElementById('restart-game-over').addEventListener('click', () => {
+            initializeGame();
+        });
+
+        // Initialize
+        initializeGame();
+        updateLanguage('en');
+    </script>
+</body>
+</html>
