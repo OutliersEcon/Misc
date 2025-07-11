@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" id="html-lang">
+<html lang="zh-TW" id="html-lang">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-lang-key="title">Snake Duel</title>
+    <title data-lang-key="title">蛇之對決</title>
     <style>
         * {
             margin: 0;
@@ -195,6 +195,13 @@
             color: #e0e0e0;
         }
 
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         canvas {
             border: 2px solid #ddd;
             border-radius: 5px;
@@ -222,6 +229,7 @@
             text-align: center;
             display: none;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
 
         body.dark-mode #game-over {
@@ -275,6 +283,181 @@
             color: #e0e0e0;
         }
 
+        /* Mobile controls */
+        .mobile-controls {
+            display: none;
+            margin-top: 20px;
+            user-select: none;
+        }
+
+        .mobile-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 10px;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+
+        .mobile-control-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.1s;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .mobile-control-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .mobile-control-btn:active {
+            transform: scale(0.95);
+            background-color: #004085;
+        }
+
+        body.dark-mode .mobile-control-btn {
+            background-color: #0056b3;
+        }
+
+        body.dark-mode .mobile-control-btn:hover {
+            background-color: #004085;
+        }
+
+        body.dark-mode .mobile-control-btn:active {
+            background-color: #003066;
+        }
+
+        .mobile-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .mobile-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .mobile-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .mobile-down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        /* Notification styles */
+        .game-notification {
+            position: absolute;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .collision-notification {
+            color: #ff4444;
+            animation: collisionFadeOut 2s ease-out forwards;
+        }
+
+        .pickup-notification {
+            animation: pickupBounce 1.5s ease-out forwards;
+        }
+
+        @keyframes collisionFadeOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.2) translateY(-20px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) translateY(-60px);
+            }
+        }
+
+        @keyframes pickupBounce {
+            0% {
+                opacity: 1;
+                transform: scale(0.8) translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.3) translateY(-15px);
+            }
+            60% {
+                opacity: 0.8;
+                transform: scale(1.1) translateY(-25px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.6) translateY(-40px);
+            }
+        }
+
+        .wall-collision {
+            color: #ff4444;
+            font-size: 28px;
+        }
+
+        .self-collision {
+            color: #ff6600;
+            font-size: 28px;
+        }
+
+        .snake-collision {
+            color: #9900ff;
+            font-size: 32px;
+        }
+
+        .food-pickup {
+            color: #007bff;
+            font-size: 24px;
+        }
+
+        .health-pickup {
+            color: #ffc107;
+            font-size: 26px;
+        }
+
+        /* Screen shake effect */
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Collision cooldown visual effect */
+        .snake-invulnerable {
+            opacity: 0.7;
+            animation: blink 0.3s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 0.5; }
+            51%, 100% { opacity: 0.8; }
+        }
+
         @media (max-width: 768px) {
             body {
                 margin: 20px auto;
@@ -288,6 +471,26 @@
 
             canvas {
                 height: 400px;
+            }
+
+            .game-notification {
+                font-size: 24px;
+            }
+
+            .food-pickup {
+                font-size: 20px;
+            }
+
+            .health-pickup {
+                font-size: 22px;
+            }
+
+            .mobile-controls {
+                display: block;
+            }
+
+            .sidebar p {
+                font-size: 14px;
             }
         }
 
@@ -324,60 +527,91 @@
             .life-text {
                 font-size: 16px;
             }
+
+            .game-notification {
+                font-size: 20px;
+            }
+
+            .food-pickup {
+                font-size: 18px;
+            }
+
+            .health-pickup {
+                font-size: 20px;
+            }
+
+            .mobile-control-grid {
+                width: 160px;
+                height: 160px;
+            }
+
+            .mobile-control-btn {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 data-lang-key="title">Snake Duel</h2>
+        <h2 data-lang-key="title">蛇之對決</h2>
         <button id="dark-mode-toggle">☾</button>
-        <button id="toggle-language" data-lang-key="toggle_language">中</button>
+        <button id="toggle-language" data-lang-key="toggle_language">EN</button>
         <div class="controls">
             <div class="control-group">
-                <label for="difficulty" data-lang-key="difficulty_label">Difficulty</label>
+                <label for="difficulty" data-lang-key="difficulty_label">難度</label>
                 <select id="difficulty">
-                    <option value="150" selected data-lang-key="easy">Easy</option>
-                    <option value="100" data-lang-key="medium">Medium</option>
-                    <option value="50" data-lang-key="hard">Hard</option>
+                    <option value="150" selected data-lang-key="easy">簡單</option>
+                    <option value="100" data-lang-key="medium">中等</option>
+                    <option value="50" data-lang-key="hard">困難</option>
                 </select>
             </div>
             <div class="control-group">
-                <label for="map" data-lang-key="map_label">Map</label>
+                <label for="map" data-lang-key="map_label">地圖</label>
                 <select id="map">
-                    <option value="normal" data-lang-key="normal_map">Normal</option>
-                    <option value="toroidal" selected data-lang-key="toroidal_map">Toroidal</option>
+                    <option value="normal" data-lang-key="normal_map">普通地圖</option>
+                    <option value="toroidal" selected data-lang-key="toroidal_map">環形地圖</option>
                 </select>
             </div>
             <div class="control-group">
                 <label for="restart" data-lang-key="restart_label"></label>
-                <button id="restart" data-lang-key="restart">Restart</button>
+                <button id="restart" data-lang-key="restart">重新開始</button>
             </div>
         </div>
         <div class="life-indicators">
             <div class="life-indicator">
                 <div class="indicator-box player-indicator"></div>
-                <span class="life-text" id="player-life" data-lang-key="player">Player: ♥♥♥♥♥</span>
+                <span class="life-text" id="player-life" data-lang-key="player">玩家: ♥♥♥♥♥</span>
             </div>
             <div class="life-indicator">
-                <span class="life-text" id="enemy-life" data-lang-key="enemy">Enemy: ♥♥♥♥♥</span>
+                <span class="life-text" id="enemy-life" data-lang-key="enemy">敵人: ♥♥♥♥♥</span>
                 <div class="indicator-box enemy-indicator"></div>
             </div>
         </div>
-        <canvas id="canvas" width="500" height="500"></canvas>
-        <div id="game-over">
-            <h3 id="game-over-text" data-lang-key="game_over_text"></h3>
-            <button id="restart-game-over" data-lang-key="play_again">Play Again</button>
+        <div class="game-container">
+            <canvas id="canvas" width="500" height="500"></canvas>
+            <div id="game-over">
+                <h3 id="game-over-text" data-lang-key="game_over_text"></h3>
+                <button id="restart-game-over" data-lang-key="play_again">再次遊戲</button>
+            </div>
+        </div>
+        <div class="mobile-controls">
+            <div class="mobile-control-grid">
+                <button class="mobile-control-btn mobile-up" data-direction="up">↑</button>
+                <button class="mobile-control-btn mobile-left" data-direction="left">←</button>
+                <button class="mobile-control-btn mobile-right" data-direction="right">→</button>
+                <button class="mobile-control-btn mobile-down" data-direction="down">↓</button>
+            </div>
         </div>
     </div>
     <div class="sidebar">
-        <h3 data-lang-key="about_title">About Snake Duel</h3>
-        <p data-lang-key="objective"><strong>Objective:</strong> Control the green snake to eat food (blue) and health pickups (yellow) while avoiding collisions with yourself or the red enemy snake.</p>
-        <p data-lang-key="controls"><strong>Controls:</strong> Use arrow keys to move the green snake (up, down, left, right).</p>
-        <p data-lang-key="mechanics"><strong>Mechanics:</strong> Eating food grows your snake. Health pickups restore 1 life (max 5). If snakes collide, the shorter snake loses 1 life; if equal, both lose 1 life.</p>
-        <p data-lang-key="maps"><strong>Maps:</strong> Normal: Snakes die on wall collisions. Toroidal: Snakes wrap around to the opposite side when hitting a wall.</p>
-        <p data-lang-key="win_lose"><strong>Win/Lose:</strong> Win by reducing the enemy's life to 0 or if the enemy hits a wall or itself (Normal map). Lose if your snake hits a wall (Normal map), itself, or runs out of life.</p>
-        <p data-lang-key="difficulty"><strong>Difficulty:</strong> Adjust speed with the difficulty selector (Easy: slower, Hard: faster).</p>
-        <p data-lang-key="tip"><strong>Tip:</strong> Grow longer than the enemy to gain an advantage in collisions!</p>
+        <h3 data-lang-key="about_title">關於蛇之對決</h3>
+        <p data-lang-key="objective"><strong>目標：</strong> 控制綠色蛇吃食物（藍色）和生命補充（黃色），同時避免與自身或紅色敵蛇碰撞。</p>
+        <p data-lang-key="controls"><strong>控制：</strong> 使用方向鍵移動綠色蛇（上、下、左、右）。你不能朝當前移動方向的完全相反方向移動。在手機上，使用遊戲下方的方向按鈕。</p>
+        <p data-lang-key="mechanics"><strong>機制：</strong> 吃食物會使蛇增長。生命補充恢復1點生命（最多5點）。若兩蛇碰撞，較短的蛇失去1點生命；若長度相等，雙方各失去1點生命。碰撞後，雙方蛇都有短暫的無敵時間。</p>
+        <p data-lang-key="maps"><strong>地圖：</strong> 普通地圖：蛇撞牆會死亡。環形地圖：蛇撞牆會從對側出現。</p>
+        <p data-lang-key="win_lose"><strong>勝負：</strong> 將敵蛇生命值降至0或敵蛇撞牆或自身（普通地圖）即獲勝。若你的蛇撞牆（普通地圖）、自身或生命值耗盡則失敗。</p>
+        <p data-lang-key="difficulty"><strong>難度：</strong> 使用難度選擇器調整速度（簡單：較慢，困難：較快）。</p>
+        <p data-lang-key="tip"><strong>提示：</strong> 讓你的蛇比敵蛇長，以在碰撞中佔優勢！</p>
     </div>
 
     <script>
@@ -390,13 +624,19 @@
         let playerLife = 5;
         let enemyLife = 5;
         let food = { x: 15, y: 15, type: 'food' };
-        let playerDir = { x: 1, y: 0 };
+        let playerDir = { x: 0, y: 0 }; // Start with no movement
         let enemyDir = { x: -1, y: 0 };
         let gameSpeed = 150; // milliseconds
         let gameMap = 'toroidal';
         let lastTime = 0;
         let gameOver = false;
         let gameRunning = false;
+        
+        // Collision cooldown variables
+        let playerInvulnerable = false;
+        let enemyInvulnerable = false;
+        let playerInvulnerableEnd = 0;
+        let enemyInvulnerableEnd = 0;
 
         // Colors
         const playerColor = '#28a745';
@@ -421,8 +661,8 @@
                 play_again: "Play Again",
                 about_title: "About Snake Duel",
                 objective: "<strong>Objective:</strong> Control the green snake to eat food (blue) and health pickups (yellow) while avoiding collisions with yourself or the red enemy snake.",
-                controls: "<strong>Controls:</strong> Use arrow keys to move the green snake (up, down, left, right).",
-                mechanics: "<strong>Mechanics:</strong> Eating food grows your snake. Health pickups restore 1 life (max 5). If snakes collide, the shorter snake loses 1 life; if equal, both lose 1 life.",
+                controls: "<strong>Controls:</strong> Use arrow keys to move the green snake (up, down, left, right). You cannot move in the exact opposite direction of your current movement. On mobile, use the directional buttons below the game.",
+                mechanics: "<strong>Mechanics:</strong> Eating food grows your snake. Health pickups restore 1 life (max 5). If snakes collide, the shorter snake loses 1 life; if equal, both lose 1 life. After a snake collision, both snakes have a brief invulnerability period.",
                 maps: "<strong>Maps:</strong> Normal: Snakes die on wall collisions. Toroidal: Snakes wrap around to the opposite side when hitting a wall.",
                 win_lose: "<strong>Win/Lose:</strong> Win by reducing the enemy's life to 0 or if the enemy hits a wall or itself (Normal map). Lose if your snake hits a wall (Normal map), itself, or runs out of life.",
                 difficulty: "<strong>Difficulty:</strong> Adjust speed with the difficulty selector (Easy: slower, Hard: faster).",
@@ -430,7 +670,12 @@
                 player: "Player",
                 enemy: "Enemy",
                 win: "You Win! Enemy Defeated!",
-                lose: "Game Over! You Lose!"
+                lose: "Game Over! You Lose!",
+                wall_hit: "WALL HIT!",
+                self_hit: "SELF COLLISION!",
+                snake_collision: "SNAKE COLLISION!",
+                food_eaten: "YUM! +1",
+                health_gained: "HEALTH! +1♥"
             },
             zh: {
                 title: "蛇之對決",
@@ -447,8 +692,8 @@
                 play_again: "再次遊戲",
                 about_title: "關於蛇之對決",
                 objective: "<strong>目標：</strong> 控制綠色蛇吃食物（藍色）和生命補充（黃色），同時避免與自身或紅色敵蛇碰撞。",
-                controls: "<strong>控制：</strong> 使用方向鍵移動綠色蛇（上、下、左、右）。",
-                mechanics: "<strong>機制：</strong> 吃食物會使蛇增長。生命補充恢復1點生命（最多5點）。若兩蛇碰撞，較短的蛇失去1點生命；若長度相等，雙方各失去1點生命。",
+                controls: "<strong>控制：</strong> 使用方向鍵移動綠色蛇（上、下、左、右）。你不能朝當前移動方向的完全相反方向移動。在手機上，使用遊戲下方的方向按鈕。",
+                mechanics: "<strong>機制：</strong> 吃食物會使蛇增長。生命補充恢復1點生命（最多5點）。若兩蛇碰撞，較短的蛇失去1點生命；若長度相等，雙方各失去1點生命。碰撞後，雙方蛇都有短暫的無敵時間。",
                 maps: "<strong>地圖：</strong> 普通地圖：蛇撞牆會死亡。環形地圖：蛇撞牆會從對側出現。",
                 win_lose: "<strong>勝負：</strong> 將敵蛇生命值降至0或敵蛇撞牆或自身（普通地圖）即獲勝。若你的蛇撞牆（普通地圖）、自身或生命值耗盡則失敗。",
                 difficulty: "<strong>難度：</strong> 使用難度選擇器調整速度（簡單：較慢，困難：較快）。",
@@ -456,12 +701,49 @@
                 player: "玩家",
                 enemy: "敵人",
                 win: "你贏了！敵人被擊敗！",
-                lose: "遊戲結束！你輸了！"
+                lose: "遊戲結束！你輸了！",
+                wall_hit: "撞牆了！",
+                self_hit: "撞到自己了！",
+                snake_collision: "蛇身碰撞！",
+                food_eaten: "美味！ +1",
+                health_gained: "回血！ +1♥"
             }
         };
 
-        // Current language
-        let currentLanguage = 'en';
+        // Current language - default to Chinese
+        let currentLanguage = 'zh';
+
+        // Get invulnerability duration based on life count
+        function getInvulnerabilityDuration(life) {
+            if (life >= 4) return 3000; // 3 seconds for high health (4-5 life)
+            if (life >= 2) return 5000; // 5 seconds for medium health (2-3 life)
+            return 10000; // 10 seconds for low health (1 life)
+        }
+
+        // Handle player movement
+        function movePlayer(direction) {
+            if (gameOver) return;
+            
+            // Start game on first move
+            if (!gameRunning) {
+                startGame();
+            }
+            
+            switch (direction) {
+                case 'up':
+                    if (playerDir.y !== 1) playerDir = { x: 0, y: -1 }; // Can't reverse into opposite direction
+                    break;
+                case 'down':
+                    if (playerDir.y !== -1) playerDir = { x: 0, y: 1 };
+                    break;
+                case 'left':
+                    if (playerDir.x !== 1) playerDir = { x: -1, y: 0 };
+                    break;
+                case 'right':
+                    if (playerDir.x !== -1) playerDir = { x: 1, y: 0 };
+                    break;
+            }
+        }
 
         // Update language
         function updateLanguage(lang) {
@@ -480,14 +762,116 @@
             updateLifeIndicators();
         }
 
+        // Show notification
+        function showNotification(type, x, y) {
+            const gameContainer = document.querySelector('.game-container');
+            const canvas = document.getElementById('canvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `game-notification ${type}`;
+            
+            // Set message based on type
+            let message = '';
+            let animationClass = '';
+            switch(type) {
+                case 'wall-collision':
+                    message = translations[currentLanguage].wall_hit;
+                    animationClass = 'collision-notification';
+                    break;
+                case 'self-collision':
+                    message = translations[currentLanguage].self_hit;
+                    animationClass = 'collision-notification';
+                    break;
+                case 'snake-collision':
+                    message = translations[currentLanguage].snake_collision;
+                    animationClass = 'collision-notification';
+                    break;
+                case 'food-pickup':
+                    message = translations[currentLanguage].food_eaten;
+                    animationClass = 'pickup-notification';
+                    break;
+                case 'health-pickup':
+                    message = translations[currentLanguage].health_gained;
+                    animationClass = 'pickup-notification';
+                    break;
+            }
+            
+            notification.textContent = message;
+            notification.classList.add(animationClass);
+            
+            // Position notification
+            const canvasX = x * gridSize + gridSize / 2;
+            const canvasY = y * gridSize + gridSize / 2;
+            
+            // Convert canvas coordinates to screen coordinates
+            const scaleX = canvasRect.width / canvas.width;
+            const scaleY = canvasRect.height / canvas.height;
+            
+            const screenX = canvasX * scaleX;
+            const screenY = canvasY * scaleY;
+            
+            notification.style.left = `${screenX}px`;
+            notification.style.top = `${screenY}px`;
+            notification.style.transform = 'translate(-50%, -50%)';
+            
+            // Add to game container
+            gameContainer.appendChild(notification);
+            
+            // Add screen shake effect for collisions
+            if (animationClass === 'collision-notification') {
+                canvas.classList.add('shake');
+                setTimeout(() => {
+                    canvas.classList.remove('shake');
+                }, 500);
+            }
+            
+            // Remove notification after animation
+            const duration = animationClass === 'pickup-notification' ? 1500 : 2000;
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, duration);
+        }
+
+        // Set invulnerability for a snake
+        function setInvulnerable(isPlayer, life) {
+            const currentTime = performance.now();
+            const duration = getInvulnerabilityDuration(life);
+            
+            if (isPlayer) {
+                playerInvulnerable = true;
+                playerInvulnerableEnd = currentTime + duration;
+            } else {
+                enemyInvulnerable = true;
+                enemyInvulnerableEnd = currentTime + duration;
+            }
+        }
+
+        // Check if invulnerability has expired
+        function updateInvulnerability(currentTime) {
+            if (playerInvulnerable && currentTime >= playerInvulnerableEnd) {
+                playerInvulnerable = false;
+            }
+            if (enemyInvulnerable && currentTime >= enemyInvulnerableEnd) {
+                enemyInvulnerable = false;
+            }
+        }
+
         // Initialize game
         function initializeGame() {
             playerSnake = [{ x: 10, y: 10 }];
             enemySnake = [{ x: 20, y: 20 }];
             playerLife = 5;
             enemyLife = 5;
-            playerDir = { x: 1, y: 0 };
+            playerDir = { x: 0, y: 0 }; // Reset to no movement
             enemyDir = { x: -1, y: 0 };
+            playerInvulnerable = false;
+            enemyInvulnerable = false;
+            playerInvulnerableEnd = 0;
+            enemyInvulnerableEnd = 0;
             spawnFood();
             gameOver = false;
             gameRunning = false;
@@ -512,30 +896,99 @@
                 playerSnake.some(segment => segment.x === x && segment.y === y) ||
                 enemySnake.some(segment => segment.x === x && segment.y === y)
             );
-            food = { x, y, type: Math.random() < 0.1 ? 'health' : 'food' };
+            
+            // Only spawn health pickups if at least one snake doesn't have full health
+            const bothSnakesFullHealth = (playerLife === 5 && enemyLife === 5);
+            const shouldSpawnHealth = !bothSnakesFullHealth && Math.random() < 0.1;
+            
+            food = { x, y, type: shouldSpawnHealth ? 'health' : 'food' };
         }
 
-        // Simple AI for enemy snake
+        // Check if a position would cause wall collision in normal map
+        function wouldHitWall(x, y) {
+            return gameMap === 'normal' && (x < 0 || x >= tileCount || y < 0 || y >= tileCount);
+        }
+
+        // Check if a position would cause self collision
+        function wouldHitSelf(snake, x, y) {
+            return snake.some(segment => segment.x === x && segment.y === y);
+        }
+
+        // Get all valid directions for enemy
+        function getValidDirections(snake, currentDir) {
+            const head = snake[0];
+            const validDirections = [];
+            
+            const directions = [
+                { x: 0, y: -1, name: 'up' },
+                { x: 0, y: 1, name: 'down' },
+                { x: -1, y: 0, name: 'left' },
+                { x: 1, y: 0, name: 'right' }
+            ];
+            
+            for (const dir of directions) {
+                // Don't reverse direction
+                if (dir.x === -currentDir.x && dir.y === -currentDir.y) continue;
+                
+                const newX = head.x + dir.x;
+                const newY = head.y + dir.y;
+                
+                // Check if this direction is safe
+                if (!wouldHitWall(newX, newY) && !wouldHitSelf(snake, newX, newY)) {
+                    validDirections.push(dir);
+                }
+            }
+            
+            return validDirections;
+        }
+
+        // Enhanced AI for enemy snake
         function moveEnemy() {
+            const head = enemySnake[0];
             let target = food;
+            
+            // Occasionally chase player if enemy is longer
             if (enemySnake.length > playerSnake.length && Math.random() < 0.3) {
-                target = playerSnake[0]; // Occasionally chase player
+                target = playerSnake[0];
             }
-
-            const dx = target.x - enemySnake[0].x;
-            const dy = target.y - enemySnake[0].y;
-            let newDir = { x: 0, y: 0 };
-
-            if (Math.abs(dx) > Math.abs(dy)) {
-                newDir.x = dx > 0 ? 1 : -1;
-            } else {
-                newDir.y = dy > 0 ? 1 : -1;
+            
+            // Get all safe directions
+            const validDirections = getValidDirections(enemySnake, enemyDir);
+            
+            if (validDirections.length === 0) {
+                // No safe moves, try to continue current direction if possible
+                const nextX = head.x + enemyDir.x;
+                const nextY = head.y + enemyDir.y;
+                if (gameMap === 'toroidal') {
+                    // Let toroidal wrapping handle it
+                    return;
+                } else {
+                    // In normal map, if no valid moves, just continue and let collision happen
+                    return;
+                }
             }
-
-            // Prevent reversing
-            if (newDir.x !== -enemyDir.x || newDir.y !== -enemyDir.y) {
-                enemyDir = newDir;
+            
+            // Find the best direction toward target
+            let bestDir = validDirections[0];
+            let bestDistance = Infinity;
+            
+            for (const dir of validDirections) {
+                const newX = head.x + dir.x;
+                const newY = head.y + dir.y;
+                
+                // Calculate distance to target
+                const dx = target.x - newX;
+                const dy = target.y - newY;
+                const distance = Math.abs(dx) + Math.abs(dy); // Manhattan distance
+                
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestDir = dir;
+                }
             }
+            
+            // Set the new direction
+            enemyDir = { x: bestDir.x, y: bestDir.y };
         }
 
         // Handle toroidal wrapping
@@ -549,33 +1002,54 @@
         // Check collisions
         function checkCollisions(snake, otherSnake, isPlayer) {
             const head = snake[0];
+            
             // Wall collision (only in Normal map)
             if (gameMap === 'normal') {
                 if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                    showNotification('wall-collision', Math.max(0, Math.min(tileCount-1, head.x)), Math.max(0, Math.min(tileCount-1, head.y)));
                     return true;
                 }
             }
+            
             // Self collision
             for (let i = 1; i < snake.length; i++) {
                 if (head.x === snake[i].x && head.y === snake[i].y) {
+                    showNotification('self-collision', head.x, head.y);
                     return true;
                 }
             }
-            // Snake collision
-            for (let i = 0; i < otherSnake.length; i++) {
-                if (head.x === otherSnake[i].x && head.y === otherSnake[i].y) {
-                    if (snake.length < otherSnake.length) {
-                        if (isPlayer) playerLife--;
-                        else enemyLife--;
-                    } else if (snake.length > otherSnake.length) {
-                        if (isPlayer) enemyLife--;
-                        else playerLife--;
-                    } else {
-                        playerLife--;
-                        enemyLife--;
+            
+            // Snake collision (only if neither snake is invulnerable)
+            if (!(isPlayer && playerInvulnerable) && !(!isPlayer && enemyInvulnerable)) {
+                for (let i = 0; i < otherSnake.length; i++) {
+                    if (head.x === otherSnake[i].x && head.y === otherSnake[i].y) {
+                        showNotification('snake-collision', head.x, head.y);
+                        
+                        if (snake.length < otherSnake.length) {
+                            if (isPlayer) {
+                                playerLife--;
+                                setInvulnerable(true, playerLife);
+                            } else {
+                                enemyLife--;
+                                setInvulnerable(false, enemyLife);
+                            }
+                        } else if (snake.length > otherSnake.length) {
+                            if (isPlayer) {
+                                enemyLife--;
+                                setInvulnerable(false, enemyLife);
+                            } else {
+                                playerLife--;
+                                setInvulnerable(true, playerLife);
+                            }
+                        } else {
+                            playerLife--;
+                            enemyLife--;
+                            setInvulnerable(true, playerLife);
+                            setInvulnerable(false, enemyLife);
+                        }
+                        updateLifeIndicators();
+                        return false;
                     }
-                    updateLifeIndicators();
-                    return false;
                 }
             }
             return false;
@@ -591,14 +1065,24 @@
             ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize / 2 - 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw snakes
+            // Draw player snake (with invulnerability effect)
             playerSnake.forEach(segment => {
                 ctx.fillStyle = playerColor;
+                if (playerInvulnerable) {
+                    ctx.globalAlpha = 0.6; // Make semi-transparent when invulnerable
+                }
                 ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+                ctx.globalAlpha = 1.0; // Reset alpha
             });
+
+            // Draw enemy snake (with invulnerability effect)
             enemySnake.forEach(segment => {
                 ctx.fillStyle = enemyColor;
+                if (enemyInvulnerable) {
+                    ctx.globalAlpha = 0.6; // Make semi-transparent when invulnerable
+                }
                 ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+                ctx.globalAlpha = 1.0; // Reset alpha
             });
         }
 
@@ -613,18 +1097,28 @@
             }
             lastTime = timestamp;
 
-            // Move player
-            const playerHead = { x: playerSnake[0].x + playerDir.x, y: playerSnake[0].y + playerDir.y };
-            if (gameMap === 'toroidal') wrapPosition(playerHead);
-            playerSnake.unshift(playerHead);
-            let playerGrow = false;
-            if (playerHead.x === food.x && playerHead.y === food.y) {
-                playerGrow = true;
-                if (food.type === 'health') playerLife = Math.min(playerLife + 1, 5);
-                spawnFood();
-                updateLifeIndicators();
+            // Update invulnerability status
+            updateInvulnerability(timestamp);
+
+            // Move player (only if direction is set)
+            if (playerDir.x !== 0 || playerDir.y !== 0) {
+                const playerHead = { x: playerSnake[0].x + playerDir.x, y: playerSnake[0].y + playerDir.y };
+                if (gameMap === 'toroidal') wrapPosition(playerHead);
+                playerSnake.unshift(playerHead);
+                let playerGrow = false;
+                if (playerHead.x === food.x && playerHead.y === food.y) {
+                    playerGrow = true;
+                    if (food.type === 'health') {
+                        playerLife = Math.min(playerLife + 1, 5);
+                        showNotification('health-pickup', food.x, food.y);
+                    } else {
+                        showNotification('food-pickup', food.x, food.y);
+                    }
+                    spawnFood();
+                    updateLifeIndicators();
+                }
+                if (!playerGrow) playerSnake.pop();
             }
-            if (!playerGrow) playerSnake.pop();
 
             // Move enemy
             moveEnemy();
@@ -640,27 +1134,37 @@
             }
             if (!enemyGrow) enemySnake.pop();
 
-            // Check collisions
-            if (checkCollisions(playerSnake, enemySnake, true)) {
-                gameOver = true;
-                gameRunning = false;
-                document.getElementById('game-over-text').innerHTML = translations[currentLanguage].lose;
-                document.getElementById('game-over').style.display = 'block';
-            } else if (checkCollisions(enemySnake, playerSnake, false)) {
+            // Check collisions (only if player is moving)
+            if (playerDir.x !== 0 || playerDir.y !== 0) {
+                if (checkCollisions(playerSnake, enemySnake, true)) {
+                    gameOver = true;
+                    gameRunning = false;
+                    document.getElementById('game-over-text').innerHTML = translations[currentLanguage].lose;
+                    document.getElementById('game-over').style.display = 'block';
+                    return;
+                }
+            }
+            
+            if (checkCollisions(enemySnake, playerSnake, false)) {
                 gameOver = true;
                 gameRunning = false;
                 document.getElementById('game-over-text').innerHTML = translations[currentLanguage].win;
                 document.getElementById('game-over').style.display = 'block';
-            } else if (playerLife <= 0) {
+                return;
+            }
+            
+            if (playerLife <= 0) {
                 gameOver = true;
                 gameRunning = false;
                 document.getElementById('game-over-text').innerHTML = translations[currentLanguage].lose;
                 document.getElementById('game-over').style.display = 'block';
+                return;
             } else if (enemyLife <= 0) {
                 gameOver = true;
                 gameRunning = false;
                 document.getElementById('game-over-text').innerHTML = translations[currentLanguage].win;
                 document.getElementById('game-over').style.display = 'block';
+                return;
             }
 
             draw();
@@ -688,28 +1192,40 @@
             updateLanguage(newLang);
         });
 
+        // Keyboard controls with preventDefault to stop scrolling
         document.addEventListener('keydown', (e) => {
-            if (gameOver) return;
-            
-            // Start game on first key press
-            if (!gameRunning) {
-                startGame();
+            // Prevent default behavior for arrow keys to stop page scrolling
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
             }
             
             switch (e.key) {
                 case 'ArrowUp':
-                    if (playerDir.y === 0) playerDir = { x: 0, y: -1 };
+                    movePlayer('up');
                     break;
                 case 'ArrowDown':
-                    if (playerDir.y === 0) playerDir = { x: 0, y: 1 };
+                    movePlayer('down');
                     break;
                 case 'ArrowLeft':
-                    if (playerDir.x === 0) playerDir = { x: -1, y: 0 };
+                    movePlayer('left');
                     break;
                 case 'ArrowRight':
-                    if (playerDir.x === 0) playerDir = { x: 1, y: 0 };
+                    movePlayer('right');
                     break;
             }
+        });
+
+        // Mobile controls
+        document.querySelectorAll('.mobile-control-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const direction = e.target.getAttribute('data-direction');
+                movePlayer(direction);
+            });
+            
+            // Prevent text selection and context menu
+            btn.addEventListener('selectstart', (e) => e.preventDefault());
+            btn.addEventListener('contextmenu', (e) => e.preventDefault());
         });
 
         document.getElementById('difficulty').addEventListener('change', (e) => {
@@ -730,9 +1246,9 @@
             initializeGame();
         });
 
-        // Initialize
+        // Initialize with Chinese as default
         initializeGame();
-        updateLanguage('en');
+        updateLanguage('zh');
     </script>
 </body>
 </html>
