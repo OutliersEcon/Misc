@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-lang">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bouncing Balls in Spinning Polygon</title>
+    <title data-lang-key="title">Bouncing Balls in Spinning Polygon</title>
     <style>
         * {
             margin: 0;
@@ -13,11 +13,15 @@
         }
 
         body {
-            max-width: 700px;
+            max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
             background-color: #f4f7fa;
             transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center; /* Added to center the content */
         }
 
         body.dark-mode {
@@ -32,6 +36,9 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s, color 0.3s;
             position: relative;
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -42,20 +49,50 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        h2 {
+        .sidebar {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: #2c2c2c;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        h2, h3 {
             color: #333;
             text-align: center;
             margin-bottom: 20px;
         }
 
-        body.dark-mode h2 {
+        h2 {
+            margin-top: 20px; /* Added to prevent overlap with buttons */
+        }
+
+        body.dark-mode h2, body.dark-mode h3 {
             color: #e0e0e0;
+        }
+
+        .sidebar p {
+            text-align: left;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        body.dark-mode .sidebar p {
+            color: #adb5bd;
         }
 
         #dark-mode-toggle {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 10px; /* Adjusted higher */
+            right: 55px;
             background-color: #6c757d;
             padding: 8px;
             font-size: 14px;
@@ -83,6 +120,39 @@
 
         body.dark-mode #dark-mode-toggle:hover {
             background-color: #8f9ba6;
+        }
+
+        #toggle-language {
+            position: absolute;
+            top: 10px; /* Adjusted higher */
+            right: 15px;
+            background-color: #28a745;
+            padding: 8px;
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            color: #fff;
+            border: none;
+        }
+
+        #toggle-language:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        body.dark-mode #toggle-language {
+            background-color: #2f9e44;
+        }
+
+        body.dark-mode #toggle-language:hover {
+            background-color: #1b6e2f;
         }
 
         .controls {
@@ -131,6 +201,9 @@
             border-radius: 5px;
             background-color: #f8f9fa;
             transition: background-color 0.3s, border-color 0.3s;
+            width: 100%;
+            max-width: 500px;
+            height: 500px;
         }
 
         body.dark-mode canvas {
@@ -138,17 +211,32 @@
             border-color: #555;
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             body {
                 margin: 20px auto;
                 padding: 10px;
+                flex-direction: column;
             }
 
-            .container {
+            .container, .sidebar {
+                max-width: 100%;
+            }
+
+            canvas {
+                height: 400px;
+            }
+
+            .sidebar p {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container, .sidebar {
                 padding: 15px;
             }
 
-            #dark-mode-toggle {
+            #dark-mode-toggle, #toggle-language {
                 padding: 6px;
                 width: 28px;
                 height: 28px;
@@ -156,39 +244,48 @@
             }
 
             canvas {
-                width: 100%;
-                height: auto;
+                height: 300px;
             }
 
             .controls {
                 flex-direction: column;
                 gap: 10px;
             }
+
+            .control-group {
+                max-width: 100%;
+            }
+
+            select, input[type="range"] {
+                height: 28px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Bouncing Balls in Spinning Polygon</h2>
+        <h2 data-lang-key="title">Bouncing Balls in Spinning Polygon</h2>
         <button id="dark-mode-toggle">☾</button>
+        <button id="toggle-language" data-lang-key="toggle_language">中</button>
         <div class="controls">
             <div class="control-group">
-                <label for="rotation-speed">Rotation Speed</label>
+                <label for="rotation-speed" data-lang-key="rotation_speed">Rotation Speed</label>
                 <input type="range" id="rotation-speed" min="0" max="0.05" step="0.001" value="0.02">
             </div>
             <div class="control-group">
-                <label for="shape-sides">Shape Sides</label>
+                <label for="shape-sides" data-lang-key="shape_sides">Shape Sides</label>
                 <select id="shape-sides">
-                    <option value="3">Triangle</option>
-                    <option value="4">Square</option>
-                    <option value="5">Pentagon</option>
-                    <option value="6" selected>Hexagon</option>
-                    <option value="7">Heptagon</option>
-                    <option value="8">Octagon</option>
+                    <option value="3" data-lang-key="triangle">Triangle</option>
+                    <option value="4" data-lang-key="square">Square</option>
+                    <option value="5" data-lang-key="pentagon">Pentagon</option>
+                    <option value="6" selected data-lang-key="hexagon">Hexagon</option>
+                    <option value="7" data-lang-key="heptagon">Heptagon</option>
+                    <option value="8" data-lang-key="octagon">Octagon</option>
                 </select>
             </div>
             <div class="control-group">
-                <label for="num-balls">Number of Balls</label>
+                <label for="num-balls" data-lang-key="num_balls">Number of Balls</label>
                 <select id="num-balls">
                     <option value="1" selected>1</option>
                     <option value="2">2</option>
@@ -198,22 +295,30 @@
                 </select>
             </div>
             <div class="control-group">
-                <label for="ball-size">Ball Size</label>
+                <label for="ball-size" data-lang-key="ball_size">Ball Size</label>
                 <input type="range" id="ball-size" min="10" max="30" step="1" value="15">
             </div>
             <div class="control-group">
-                <label for="mass-type">Mass Type</label>
+                <label for="mass-type" data-lang-key="mass_type">Mass Type</label>
                 <select id="mass-type">
-                    <option value="same" selected>Same Mass</option>
-                    <option value="proportional">Size Proportional</option>
+                    <option value="same" selected data-lang-key="same_mass">Same Mass</option>
+                    <option value="proportional" data-lang-key="proportional_mass">Size Proportional</option>
                 </select>
             </div>
             <div class="control-group">
-                <label for="elasticity">Elasticity</label>
+                <label for="elasticity" data-lang-key="elasticity">Elasticity</label>
                 <input type="range" id="elasticity" min="0.5" max="1.0" step="0.01" value="0.9">
             </div>
         </div>
         <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+
+    <div class="sidebar">
+        <h3 data-lang-key="about_title">About Bouncing Balls in Spinning Polygon</h3>
+        <p data-lang-key="description"><strong>Description:</strong> This simulation demonstrates balls bouncing inside a rotating polygon. Adjust parameters to see how physics changes with different shapes, speeds, and ball properties.</p>
+        <p data-lang-key="controls_desc"><strong>Controls:</strong> Use sliders and dropdowns to change rotation speed, number of sides, number of balls, ball size, mass type, and elasticity.</p>
+        <p data-lang-key="physics_desc"><strong>Physics:</strong> Balls interact with gravity, friction, and elastic collisions. In 'Size Proportional' mass mode, larger balls have more mass affecting collision dynamics.</p>
+        <p data-lang-key="tip"><strong>Tip:</strong> Try different polygon shapes and increase the number of balls to observe complex interactions!</p>
     </div>
 
     <script>
@@ -236,6 +341,84 @@
 
         // Colors for different balls
         const ballColors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8'];
+
+        // Translations
+        const translations = {
+            en: {
+                title: "Bouncing Balls in Spinning Polygon",
+                toggle_language: "中",
+                rotation_speed: "Rotation Speed",
+                shape_sides: "Shape Sides",
+                triangle: "Triangle",
+                square: "Square",
+                pentagon: "Pentagon",
+                hexagon: "Hexagon",
+                heptagon: "Heptagon",
+                octagon: "Octagon",
+                num_balls: "Number of Balls",
+                ball_size: "Ball Size",
+                mass_type: "Mass Type",
+                same_mass: "Same Mass",
+                proportional_mass: "Size Proportional",
+                elasticity: "Elasticity",
+                about_title: "About Bouncing Balls in Spinning Polygon",
+                description: "<strong>Description:</strong> This simulation demonstrates balls bouncing inside a rotating polygon. Adjust parameters to see how physics changes with different shapes, speeds, and ball properties.",
+                controls_desc: "<strong>Controls:</strong> Use sliders and dropdowns to change rotation speed, number of sides, number of balls, ball size, mass type, and elasticity.",
+                physics_desc: "<strong>Physics:</strong> Balls interact with gravity, friction, and elastic collisions. In 'Size Proportional' mass mode, larger balls have more mass affecting collision dynamics.",
+                tip: "<strong>Tip:</strong> Try different polygon shapes and increase the number of balls to observe complex interactions!"
+            },
+            zh: {
+                title: "旋轉多邊形中的彈跳球",
+                toggle_language: "EN",
+                rotation_speed: "旋轉速度",
+                shape_sides: "形狀邊數",
+                triangle: "三角形",
+                square: "正方形",
+                pentagon: "五邊形",
+                hexagon: "六邊形",
+                heptagon: "七邊形",
+                octagon: "八邊形",
+                num_balls: "球的數量",
+                ball_size: "球的大小",
+                mass_type: "質量類型",
+                same_mass: "相同質量",
+                proportional_mass: "大小比例",
+                elasticity: "彈性",
+                about_title: "關於旋轉多邊形中的彈跳球",
+                description: "<strong>描述：</strong> 此模擬演示球在旋轉多邊形內彈跳。調整參數以查看不同形狀、速度和球屬性如何改變物理行為。",
+                controls_desc: "<strong>控制：</strong> 使用滑塊和下拉菜單更改旋轉速度、邊數、球數、球大小、 質量類型和彈性。",
+                physics_desc: "<strong>物理：</strong> 球與重力、摩擦和彈性碰撞互動。在 '大小比例' 質量模式下，較大的球具有更大的質量，影響碰撞動態。",
+                tip: "<strong>提示：</strong> 嘗試不同的多邊形形狀並增加球的數量以觀察複雜的互動！"
+            }
+        };
+
+        // Current language - default to English
+        let currentLanguage = 'en';
+
+        // Update language
+        function updateLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('html-lang').setAttribute('lang', lang === 'en' ? 'en' : 'zh-TW');
+
+            // Update all elements with data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    element.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update select options
+            document.querySelectorAll('option[data-lang-key]').forEach(option => {
+                const key = option.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    option.textContent = translations[lang][key];
+                }
+            });
+
+            // Update toggle button text
+            document.getElementById('toggle-language').textContent = translations[lang].toggle_language;
+        }
 
         // Initialize balls with non-overlapping positions
         function initializeBalls(count, radius, restitution) {
@@ -301,31 +484,32 @@
         // Event listeners for controls
         document.getElementById('rotation-speed').addEventListener('input', (e) => {
             rotationSpeed = parseFloat(e.target.value);
+            // No reset for rotation speed
         });
 
         document.getElementById('shape-sides').addEventListener('change', (e) => {
             numSides = parseInt(e.target.value);
-            initializeBalls(numBalls, ballRadius, restitution);
+            initializeBalls(numBalls, ballRadius, restitution); // Reset
         });
 
         document.getElementById('num-balls').addEventListener('change', (e) => {
             numBalls = parseInt(e.target.value);
-            initializeBalls(numBalls, ballRadius, restitution);
+            initializeBalls(numBalls, ballRadius, restitution); // Reset
         });
 
         document.getElementById('ball-size').addEventListener('input', (e) => {
             ballRadius = parseInt(e.target.value);
-            initializeBalls(numBalls, ballRadius, restitution);
+            initializeBalls(numBalls, ballRadius, restitution); // Reset
         });
 
         document.getElementById('mass-type').addEventListener('change', (e) => {
             massType = e.target.value;
-            initializeBalls(numBalls, ballRadius, restitution);
+            initializeBalls(numBalls, ballRadius, restitution); // Reset
         });
 
         document.getElementById('elasticity').addEventListener('input', (e) => {
             restitution = parseFloat(e.target.value);
-            initializeBalls(numBalls, ballRadius, restitution);
+            initializeBalls(numBalls, ballRadius, restitution); // Reset
         });
 
         // Calculate polygon vertices
@@ -547,9 +731,16 @@
 
         // Event listener
         document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('toggle-language').addEventListener('click', () => {
+            const newLang = currentLanguage === 'en' ? 'zh' : 'en';
+            updateLanguage(newLang);
+        });
 
         // Start animation
         animate();
+
+        // Initialize with English as default
+        updateLanguage('en');
     </script>
 </body>
 </html>
